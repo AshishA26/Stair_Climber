@@ -10,6 +10,8 @@
 
 const int MAX_DIST  = 30; //Width of each step
 
+const float TIME_INTERVAL = 5;
+
 void rotateRobot(int angle);
 
 void configureSensors();
@@ -18,9 +20,11 @@ void driveMotor(int motorPower);
 
 void climb();
 
-void screamDetected (int soundLevel);
+void screamDetected(int soundLevel, float timeInterval);
 
-double measureDist ();
+double measureDist(float timeInterval);
+
+void driveDist();
 
 task main () 
 {
@@ -36,7 +40,8 @@ task main ()
     Play notification sound
     
     **Everything tabbed exists in a do while loop, condition(touch sensor not activated, forward distance within a step length)
-    	Drive forward at a steady speed, while ultrasonic min dist not met (Make a function that takes dist measurements as a 3 point average over 15ms)
+    	
+      Drive forward at a steady speed, while ultrasonic min dist not met (Make a function that takes dist measurements as a 3 point average over 15ms)
     
     	Drive slowly for 5 seconds
     
@@ -78,33 +83,39 @@ task main ()
   nMotorEncoder[motorD] = 0;
   
   //display groups and name
-  displayString(5, "Group: 8, Robot: 33, Name: Bertha?");
+  displayString(5, "Group: 8, Robot: 33, Name: Bertha");
   
-  const double SOUND_LEVEL = 40;
+  const float SOUND_LEVEL = 40;
+  
   //stuck in the function until something loud is detected
-  screamDetected(SOUND_LEVEL);
+  screamDetected(SOUND_LEVEL, TIME_INTERVAL);
   
   //play sound
   playSoundFile("Blip1");
 	
-  //drive motors for 5 seconds
-  
-  driveMotors(25,25);
-  time1[T1] = 0;
-	while(time1[T1] < 5000)
-  {}
-  
-  while(sensorValue(colourSensor value something here) != (int) colorRed)
-  {
+  bool 
+  do{
+    //drive motors until possible stairs detected
+    driveMotors(40,40);
+    while(measureDist(TIME_INTERVAL) < 10)
+    {}
+
+    //drive 5 seconds until aligned
     driveMotors(25,25);
-    const double STAIR_LENGTH = 30;
-    //needs work here
-    while(nMotorEnconder[motorA] < STAIR_LENGTH)
+    time1[T1] = 0;
+    while(time1[T1] < 5000)
     {}
     
+    driveMotors(0,0);
     climb();
-	}
+    
+  } while();
   
+  driveMotors(25,25);
+  while(sensorValue(colourSensor value) != (int) colorRed)
+  {}
+  
+  driveMotors(0,0);
   //play sound
   playSoundFile("Blip1");
 }
@@ -156,52 +167,69 @@ void rotateRobot(int angle) // Make all motor inputs slow
 }
 
 
-void climb()
+void climb(int motorPower)
 {
   nMotorEncoder[TRACK_MOTOR] = 0;
-  motor[FRONT_WHEELS] = motor[TRACK_MOTOR] = 20;
-  while(SensorValue[ULTRASONIC] > MAX_DIST && SensorValue[TOUCH] == 0) //Because SensorValue[ULTRASONIC] is 255 when climbing
+  motor[FRONT_WHEELS] = motor[TRACK_MOTOR] = motorPower;
+  while(SensorValue[ULTRASONIC] < MAX_DIST && SensorValue[TOUCH] == 0) //Because SensorValue[ULTRASONIC] is 255 when climbing. MAX_DIST is the width of each step = 30 for now
   {}
-  motor[FRONT_WHEELS] = motor[TRACK_MOTOR] = 0;
-  if(SensorValue[ULTRASONIC] < MAX_DIST)
+
+  if(SensorValue[TOUCH] == 1)
   {
-    motor[TRACK_MOTOR] = -20;
+    motor[TRACK_MOTOR] = motor[FRONT_WHEELS] = -motorPower;
     while(nMotorEncoder[TRACK_MOTOR] > 0)
     {}
-    motor[TRACK_MOTOR] = 20;
+    motor[TRACK_MOTOR] = 0;
+  } 
+  else
+  {
+    driveDist(distance, power)
+    while()
   }
+  
 	return;
 }
 
-double measureDist (){
-  const double WAIT_TIME = 5;
-  double average = 0;
-  double reading1 = sensorValue (**sensorport**);
+float measureDist(float waitTime)
+{
+  float average = 0;
+  float reading1 = SensorValue (**sensorport**);
   time1[T1] = 0;
-  while (time1[T1] > WAIT_TIME)
+  while (time1[T1] > waitTime)
   {}
-  double reading2 = sensorValue (*sensorport);
-  while (time1[T1] > WAIT_TIME*2)
+  float reading2 = SensorValue (*sensorport);
+  while (time1[T1] > waitTime*2)
   {}
-  double reading3 = sensorValue (****sensorport here**);
+  float reading3 = SensorValue (****sensorport here**);
   average = (reading1 + reading2 + reading3)/3.0;
   return average;
 }
 
-void screamDetected (int soundLevel){
-  const double WAIT_TIME = 5;
-  double average = 0;
-  while (average < soundLevel){
-    double reading1 = sensorValue (**sensorport**);
+void screamDetected (int soundLevel, float waitTime){
+  float average = 0;
+  while (average < soundLevel)
+  {
+    float reading1 = sensorValue (**sensorport**);
     time1[T1] = 0;
-    while (time1[T1] > WAIT_TIME)
+    while (time1[T1] > waitTime)
     {}
-    double reading2 = sensorValue (*sensorport);
-    while (time1[T1] > WAIT_TIME*2)
+    float reading2 = sensorValue (*sensorport);
+    while (time1[T1] > waitTime*2)
     {}
-    double reading3 = sensorValue (****sensorport here**);
+    float reading3 = sensorValue (****sensorport here**);
     average = (reading1 + reading2 + reading3)/3.0;
 	}
+}
+
+void driveDist(int distance)
+{
+	motor[motorA] = 0;
+  while (distance)
+  {
+    
+  }
+  
+  
 }
 
 
