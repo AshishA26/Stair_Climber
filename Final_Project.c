@@ -4,7 +4,7 @@
   11/03/2023
 */
 
-//Robot Name: Bertha
+//Robot Name: Bertha 
 
 
 /*References: https://www.robotc.net/files/pdf/lego-natural-language/NL_NXT_Quick.pdf
@@ -29,55 +29,19 @@ float measureDist(float waitTime);
 
 void driveDist(int distance, int power);
 
-task main ()
+  //constants
+  const int SET_ZERO = 0;
+  const int SPEED_SLOW = 25;
+  const int SPEED_MID = 40;
+  const float SOUND_LEVEL = 40;
+  const float TIME_INTERVAL = 5;
+  const int MAX_DIST  = 30;
+  const int CM_TO_ENC = 360/2.0*PI*3.4;
+
+
+task main () 
 {
 	configureSensors();
-
-  /*
-    Reset Sensors and Motor Encoders as Required
-
-    Display Group Name, Robot Number, Robot Name
-
-    While sound threshold not met, don't start (Make a function that takes sound measurements as a 3 point average over 15ms)
-
-    Play notification sound
-
-    **Everything tabbed exists in a do while loop, condition(touch sensor not activated, forward distance within a step length)
-
-      Drive forward at a steady speed, while ultrasonic min dist not met (Make a function that takes dist measurements as a 3 point average over 15ms)
-
-    	Drive slowly for 5 seconds
-
-    	While ultrasonic max dist not met or max height not met, begin climibing the belt and front wheels simultaneously and a slow rate (speed to be determined based on results)
-
-    	IF max height reached, go back down, using motorencoders and play error noise and end program
-
-    	ELSE drive distance of robot length, stop, pick up belt using motorencoder
-
-    While color not correct, drive until color is reached
-
-    Play notification sound
-
-    End Program
-
-    ---
-
-    Project Extension, IF WE HAVE TIME
-
-    **Back in the climbing phase, store the distance climbed and distance driven from edge, remember this all only happens if we sucessfully climbed.
-
-    Drive back exactly the distance driven, put down the belt slight more than recorded via encoder
-
-    Slowly Drive back until distance of bot driven, once reached immediately drive front wheels slowly back and back wheels only a tiny bit forward (This part would take lots of testing)
-
-    Drive both simultaneously down at the same rate until motor encoder amount met
-
-    Driver back, turn around, and arrive at start.
-
-    Play notification
-
-    End Program
-  */
 
     /*
     S1 multiplexer, c2 to sound, c3 colour
@@ -88,35 +52,27 @@ task main ()
     A Top left wheel
     B Back medium motor
     C Belt
-    D top right wheel
+    D top right wheel 
     */
-
-  //constants
-  const int SET_ZERO = 0;
-  const int SPEED_SLOW = 25;
-  const int SPEED_MID = 40;
-  const float SOUND_LEVEL = 40;
-  const float TIME_INTERVAL = 5;
-  const int MAX_DIST  = 30;
-
+  
   //initialize motor encoders
   nMotorEncoder[motorA] = SET_ZERO;
   nMotorEncoder[motorB] = SET_ZERO;
   nMotorEncoder[motorC] = SET_ZERO;
   nMotorEncoder[motorD] = SET_ZERO;
 
-
+  
   //display groups and name
   displayString(5, "Group: 8-8,");
   displayString(6, "Robot: 33,");
   displayString(7, "Name: Bertha");
-
+  
   //stuck in the function until something loud is detected
   screamDetected(SOUND_LEVEL, TIME_INTERVAL);
-
+  
   //play sound
   playSoundFile("Blip1");
-
+	
   bool failedClimb = false;
   do{
     //drive motors until possible stairs detected
@@ -129,23 +85,24 @@ task main ()
     time1[T1] = SET_ZERO;
     while(time1[T1] < 5000)
     {}
-
+    
     driveMotors(SET_ZERO,SET_ZERO);
     failedClimb = climb(SPEED_SLOW);
-
+    
   } while(measureDist(TIME_INTERVAL) < MAX_DIST && !failedClimb);
-
+  
   if(failedClimb)
   {
    driveDist(40, -SPEED_MID);
   }
   else
   {
+    // FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     motor[motorC] = SPEED_SLOW;
     while(nMotorEncoder[motorC] > SET_ZERO)
     {}
     motor[motorC] = SET_ZERO;
-
+    
     driveMotors(SPEED_SLOW,SPEED_SLOW);
     while(SensorValue(**Color Sensor**) != (int) colorRed)
     {}
@@ -165,9 +122,9 @@ void configureSensors() //Sensor #s to be determined and added
 	wait1Msec(50);
 	SensorMode[**Color Sensor**] = modeEV3Color_Color;
 	wait1Msec(50);
-
+  
   //**Sound Sensor Config - To Be Added**
-
+  
 	SensorType[S2] = sensorEV3_Gyro;
 	wait1Msec(50);
 	SensorMode[S2] = modeEV3Gyro_Calibration;
@@ -212,24 +169,43 @@ bool climb(int motorPower)
   nMotorEncoder[motorC] = 0;
   driveMotors(motorPower, motorPower);
   motor[motorC] = motorPower;
-  while(SensorValue[S4] < MAX_DIST && SensorValue[S3] == 0) //Because SensorValue[ULTRASONIC] is 255 when climbing. MAX_DIST is the width of each step = 30 for now
+  while(SensorValue[S4] > MAX_DIST && SensorValue[S3] == 0) //Because SensorValue[ULTRASONIC] is 255 when climbing. MAX_DIST is the width of each step = 30 for now
   {}
 
   if(SensorValue[S3] == 1)
-  {
+  {    
     driveMotors(-motorPower, -motorPower);
     motor[motorC] = -motorPower;
     while(nMotorEncoder[motorC] > 0)
     {}
     motor[motorC] = 0;
     return true;
-  }
+  } 
   else
   {
-    motor[motorC] = 0;
-    nMotorEncoder[motorA] = nMotorEncoder[motorD] = 0;
-    driveDist(ROBOT_LENGTH, motorPower);
-    return false;
+    int reading1 = nMotorEncoder(motorA);
+ 	 	while (fabs(nMotorEncoder(motorA)) < reading1+(5*CM_TO_ENC) && SensorValue[S3] == 0)
+ 	 	{}
+    
+    if(SensorValue[S3] == 1)
+    {    
+      driveMotors(-motorPower, -motorPower);
+      motor[motorC] = -motorPower;
+      while(nMotorEncoder[motorC] > 0)
+      {}
+      motor[motorC] = 0;
+      return true;
+    } 
+    else
+    {
+      motor[motorC] = 0;
+    	driveMotors(0);
+    	driveDist(ROBOT_LENGTH, motorPower);
+      
+      //Pull back of robot up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      
+    	return false;
+    }
   }
 }
 
@@ -270,14 +246,58 @@ void screamDetected (int soundLevel, float waitTime){
 
 void driveDist(int distance, int power)
 {
-  const int SET_ZERO = 0;
-  const int CM_TO_ENC = 360/2.0*PI*2.75;
   nMotorEncoder(motorA) = SET_ZERO;
   float distToDrive = distance*CM_TO_ENC;
   driveMotors(power, power);
-  motor[motorC] = power;
+  motor[motorB] = power;
   while (fabs(nMotorEncoder(motorA)) < distToDrive)
   {}
   driveMotors(SET_ZERO, SET_ZERO);
-  motor[motorC] = SET_ZERO;
+  motor[motorB] = SET_ZERO;
 }
+
+  /*
+    Reset Sensors and Motor Encoders as Required
+    
+    Display Group Name, Robot Number, Robot Name
+    
+    While sound threshold not met, don't start (Make a function that takes sound measurements as a 3 point average over 15ms)
+    
+    Play notification sound
+    
+    **Everything tabbed exists in a do while loop, condition(touch sensor not activated, forward distance within a step length)
+    	
+      Drive forward at a steady speed, while ultrasonic min dist not met (Make a function that takes dist measurements as a 3 point average over 15ms)
+    
+    	Drive slowly for 5 seconds
+    
+    	While ultrasonic max dist not met or max height not met, begin climibing the belt and front wheels simultaneously and a slow rate (speed to be determined based on results)
+    
+    	IF max height reached, go back down, using motorencoders and play error noise and end program
+    
+    	ELSE drive distance of robot length, stop, pick up belt using motorencoder
+    
+    While color not correct, drive until color is reached
+    
+    Play notification sound
+    
+    End Program
+    
+    ---
+    
+    Project Extension, IF WE HAVE TIME
+    
+    **Back in the climbing phase, store the distance climbed and distance driven from edge, remember this all only happens if we sucessfully climbed.
+    
+    Drive back exactly the distance driven, put down the belt slight more than recorded via encoder
+    
+    Slowly Drive back until distance of bot driven, once reached immediately drive front wheels slowly back and back wheels only a tiny bit forward (This part would take lots of testing)
+    
+    Drive both simultaneously down at the same rate until motor encoder amount met
+    
+    Driver back, turn around, and arrive at start.
+    
+    Play notification
+    
+    End Program
+  */
