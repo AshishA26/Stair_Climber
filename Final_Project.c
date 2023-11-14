@@ -30,7 +30,7 @@ float measureDist(float waitTime);
 
 void driveDist(int distance, int power);
 
-void pullRobotBackUp(int motorPower);
+void pullBeltBackUp(int motorPower);
 
 void moveRobotBackDown(int motorPower);
 
@@ -210,7 +210,7 @@ bool climb(int motorPower)
     driveMotorsFrontWithBelt(0);
 		driveDist(ROBOT_LENGTH, motorPower);
 
-		pullRobotBackUp(SPEED_SLOW);
+		pullBeltBackUp(SPEED_SLOW);
 
 		return false;
 	}
@@ -226,7 +226,7 @@ void moveRobotBackDown(int motorPower)
 }
 
 // Pull belt back up
-void pullRobotBackUp(int motorPower)
+void pullBeltBackUp(int motorPower)
 {
 	motor[motorC] = motorPower;
 	while(abs(nMotorEncoder(motorC)) > 0)
