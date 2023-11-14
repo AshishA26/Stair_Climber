@@ -25,5 +25,6 @@ void screamDetected (int soundLevel, float waitTime)
 
 task main()
 {
+	SensorType[S2] = sensorSoundDB;
 	screamDetected(SOUND_LEVEL, TIME_INTERVAL);
 }
