@@ -1,4 +1,4 @@
-const int CM_TO_ENC = 360/2.0*PI*3.4;
+const int CM_TO_ENC = 360/(2.0*PI*3.4);
 
 void driveMotorsFrontBack(int motorPower)
 {
@@ -47,5 +47,5 @@ task main ()
   //driveMotorsFrontWithBelt(0);
   //driveMotorsFrontBack(0);
 
-	driveDist(20, 20);
+	//driveDist(20, 20);
 }
