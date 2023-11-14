@@ -34,7 +34,7 @@ void pullRobotBackUp(int motorPower);
 
 void moveRobotBackDown(int motorPower);
 
-//constants
+// Constants
 const int SPEED_SLOW = 25;
 const int SPEED_MID = 40;
 const float SOUND_LEVEL = 40;
@@ -49,69 +49,75 @@ task main ()
 	configureSensors();
 
 	/*
-	S1 multiplexer, c2 to sound, c3 colour
-	S2 gyro
-	S3 touch
-	S4 ultrasonic
+		S1 multiplexer, c2 to sound, c3 colour
+		S2 gyro
+		S3 touch
+		S4 ultrasonic
 
-	A Top left wheel
-	B Back big motor
-	C Belt
-	D top right wheel
+		A Top left wheel
+		B Back big motor
+		C Belt
+		D top right wheel
 	*/
 
-	//initialize motor encoders
+	// Initialize motor encoders
 	nMotorEncoder[motorA] = 0;
 	nMotorEncoder[motorB] = 0;
 	nMotorEncoder[motorC] = 0;
 	nMotorEncoder[motorD] = 0;
 
 
-	//display groups and name
+	// Display group and name
 	displayString(5, "Group: 8-8,");
 	displayString(6, "Robot: 33,");
 	displayString(7, "Name: Bertha");
 
-	//stuck in the function until something loud is detected
+	// Wait until a loud noise is detected
 	screamDetected(SOUND_LEVEL, TIME_INTERVAL);
 
-	//play sound
+	// Play sound
 	playSoundFile("Blip1");
 
 	bool failedClimb = false;
 	do{
-		//drive motors until possible stairs detected
+		// Drive motors until possible stairs detected
 		driveMotorsFrontBack(SPEED_MID);
 		while(measureDist(TIME_INTERVAL) > 10)
 		{}
 
-		//drive 5 seconds until aligned
+		// Drive 5 seconds slowly until aligned
 		driveMotorsFrontBack(SPEED_SLOW);
 		time1[T1] = 0;
 		while(time1[T1] < 5000)
 		{}
 
+    // Stop and climb
 		driveMotorsFrontBack(0);
 		failedClimb = climb(SPEED_SLOW);
 
+    // While the robot has not cleared the stair and has not reached max height
 	} while(measureDist(TIME_INTERVAL) < MAX_DIST && !failedClimb);
 
+  // Back away from stair
 	if(failedClimb)
 	{
 		driveDist(40, -SPEED_MID);
 	}
+  // Drive while red isn't detected
 	else
 	{
 		driveMotorsFrontBack(SPEED_SLOW);
 		while(SensorValue(**Color Sensor**) != (int) colorRed)
 		{}
 	}
+
+  // Stop and play sound
 	driveMotorsFrontBack(0);
-	//play sound
 	playSoundFile("Blip1");
 }
 
-void configureSensors() //Sensor #s to be determined and added
+// Sensor Configuration
+void configureSensors()
 {
 	SensorType[S3] = sensorEV3_Touch;
 
@@ -132,26 +138,30 @@ void configureSensors() //Sensor #s to be determined and added
 	wait1Msec(50);
 }
 
-void driveMotorsFrontBack(int motorPower) // drive front and back motors
+// Drive front and back motors
+void driveMotorsFrontBack(int motorPower)
 {
 	motor[motorD] = motor[motorA] = motor[motorB] = motorPower;
 	return;
 }
 
-void driveMotorsFront(int leftPower, int rightPower) // drive only front motors //can use for turning
+// Drive only front motors (can be used for turning)
+void driveMotorsFront(int leftPower, int rightPower)
 {
 	motor[motorD] = rightPower;
 	motor[motorA] = leftPower;
 	return;
 }
 
-void driveMotorsFrontWithBelt(int motorPower) // drive only front motors and belt
+// Drive only front motors and belt
+void driveMotorsFrontWithBelt(int motorPower)
 {
 	motor[motorD] = motor[motorA] = motor[motorC] = motorPower;
 	return;
 }
 
-void rotateRobot(int angle) // Make all motor inputs slow
+// Rotate robot
+void rotateRobot(int angle)
 {
 	int prevAngle = getGyroDegrees(S2);
 	int newAngle = prevAngle + angle;
@@ -172,21 +182,27 @@ void rotateRobot(int angle) // Make all motor inputs slow
   return;
 }
 
+// Climb robot
 bool climb(int motorPower)
 {
 	nMotorEncoder(motorC) = 0;
 	driveMotorsFrontWithBelt(motorPower);
-	while(SensorValue[S4] < MAX_DIST && SensorValue[S3] == 0) //Because SensorValue[ULTRASONIC] is 255 when climbing. MAX_DIST is the width of each step = 30 for now
+  // While stair not cleared and max height not reached
+  // (Because SensorValue[ULTRASONIC] is 255 when climbing. MAX_DIST is the width of each step = 30 for now)
+	while(SensorValue[S4] < MAX_DIST && SensorValue[S3] == 0)
 	{}
+  // Climb an additional distance to account for wheel offset
 	int reading1 = nMotorEncoder(motorA);
 	while (fabs(nMotorEncoder(motorA)) < reading1+(5*CM_TO_ENC) && SensorValue[S3] == 0)
 	{}
 
+  // Failed to climb, go back down
 	if(SensorValue[S3] == 1)
 	{
 		moveRobotBackDown(motorPower);
 		return true;
 	}
+  // Drive robot forward and pull up belt
 	else
 	{
     driveMotorsFrontWithBelt(0);
@@ -198,6 +214,7 @@ bool climb(int motorPower)
 	}
 }
 
+// Move belt back down
 void moveRobotBackDown(int motorPower)
 {
     driveMotorsFrontWithBelt(-motorPower);
@@ -206,6 +223,7 @@ void moveRobotBackDown(int motorPower)
     driveMotorsFrontWithBelt(0);
 }
 
+// Pull belt back up
 void pullRobotBackUp(int motorPower)
 {
 	motor[motorC] = motorPower;
@@ -214,6 +232,7 @@ void pullRobotBackUp(int motorPower)
 	motor[motorC] = 0;
 }
 
+// Measure ultrasonic distance
 float measureDist(float waitTime)
 {
 	float average = 0;
@@ -231,6 +250,7 @@ float measureDist(float waitTime)
 	return average;
 }
 
+// Measure sound
 void screamDetected (int soundLevel, float waitTime)
 {
 	float average = 0;
@@ -250,6 +270,7 @@ void screamDetected (int soundLevel, float waitTime)
 	}
 }
 
+// Drive a given distance
 void driveDist(int distance, int power)
 {
 	nMotorEncoder(motorA) = 0;
