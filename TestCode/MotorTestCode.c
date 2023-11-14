@@ -1,14 +1,37 @@
-
-void driveMotors(int leftPower, int rightPower) // Make all motor inputs slow
+void driveMotorsFrontBack(int motorPower)
 {
-  motor[motorD] = rightPower;
-  motor[motorA] = leftPower;
-  return;
+	motor[motorD] = motor[motorA] = motorPower;
+	motor[motorB] = -motorPower;
+	return;
+}
+
+void driveMotorsFront(int leftPower, int rightPower)
+{
+	motor[motorD] = rightPower;
+	motor[motorA] = leftPower;
+	return;
+}
+
+void driveMotorsFrontWithBelt(int motorPower)
+{
+	motor[motorD] = motor[motorA] = motorPower;
+	motor[motorC] = -motorPower;
+	return;
 }
 
 task main ()
 {
-  driveMotors(50,50);
+  //driveMotorsFront(20, 20);
+  //wait1Msec(1000);
+  //driveMotorsFront(0, 0);
+
+  //driveMotorsFrontBack(20);
+  //wait1Msec(1000);
+  //driveMotorsFrontBack(0);
+
+  driveMotorsFrontWithBelt(20);
+  driveMotorsFrontBack(20);
   wait1Msec(1000);
-  driveMotors(0,0);
+  driveMotorsFrontWithBelt(0);
+  driveMotorsFrontBack(0);
 }

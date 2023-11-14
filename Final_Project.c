@@ -141,7 +141,8 @@ void configureSensors()
 // Drive front and back motors
 void driveMotorsFrontBack(int motorPower)
 {
-	motor[motorD] = motor[motorA] = motor[motorB] = motorPower;
+	motor[motorD] = motor[motorA] = motorPower;
+	motor[motorB] = -motorPower;
 	return;
 }
 
@@ -156,7 +157,8 @@ void driveMotorsFront(int leftPower, int rightPower)
 // Drive only front motors and belt
 void driveMotorsFrontWithBelt(int motorPower)
 {
-	motor[motorD] = motor[motorA] = motor[motorC] = motorPower;
+	motor[motorD] = motor[motorA] = motorPower;
+	motor[motorC] = -motorPower;
 	return;
 }
 
