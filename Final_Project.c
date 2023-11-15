@@ -1,45 +1,40 @@
 /*
-Samuel Ke, Ashish Agrahari, Svamin Bhatnagar, and Jacob Zhuang
-Lego EV3 Group 8-8
-11/03/2023
-Robot Name: Bertha
-Version: 1.0
-Description:
-Acknowledgements:
-- https://www.robotc.net/files/pdf/lego-natural-language/NL_NXT_Quick.pdf
-- http://cmra.rec.ri.cmu.edu/products/teachingmindstorms/sensing/volumespeed/documents/Sensing_SpeedBasedVolume.pdf
-- https://www.robotc.net/files/pdf/lego-natural-language/NL_TETRIX_Quick.pdf
-- https://www.youtube.com/watch?v=kjoKC0uWtTo&ab_channel=hundredvisionsguy
+	Samuel Ke, Ashish Agrahari, Svamin Bhatnagar, and Jacob Zhuang
+	Lego EV3 Group 8-8
+	11/03/2023
+	Robot Name: Bertha
+	Version: 1.0
+	Description: Stair Climbing Robot
+	Acknowledgements:
+		- https://www.robotc.net/files/pdf/lego-natural-language/NL_NXT_Quick.pdf
+		- http://cmra.rec.ri.cmu.edu/products/teachingmindstorms/sensing/volumespeed/documents/Sensing_SpeedBasedVolume.pdf
+		- https://www.robotc.net/files/pdf/lego-natural-language/NL_TETRIX_Quick.pdf
+		- https://www.youtube.com/watch?v=kjoKC0uWtTo&ab_channel=hundredvisionsguy
+    - Multiplexer code from learn
+  Note: The program assumes common.h, mindsensors-ev3smux.h and UW_sensorMux.c are in the same directory
+				as this file.
 */
 
+#include "UW_sensorMux.c"
+
 void configureSensors();
-
 void driveMotorsFront(int leftPower, int rightPower);
-
 void driveMotorsFrontBack(int motorPower);
-
 void driveMotorsFrontWithBelt(int motorPower);
-
 void rotateRobot(int angle);
-
 bool climb(int motorPower);
-
 void screamDetected(int soundLevel, float waitTime);
-
 float measureDist(float waitTime);
-
 void driveDist(int distance, int power);
-
 void pullBeltBackUp(int motorPower);
-
 void moveRobotBackDown(int motorPower);
 
 // Constants
 const int SPEED_SLOW = 25;
 const int SPEED_MID = 40;
-const float SOUND_LEVEL = 40;
+const float SOUND_LEVEL = 60;
 const float TIME_INTERVAL = 5;
-const int MAX_DIST  = 30;
+const int MAX_DIST = 8;
 const int CM_TO_ENC = 360/2.0*PI*3.4;
 const int ROBOT_LENGTH = 20;
 const int TURN_SPEED = 10;
@@ -49,15 +44,17 @@ task main ()
 	configureSensors();
 
 	/*
-		S1 multiplexer, c2 to sound, c3 colour
-		S2 gyro
-		S3 touch
-		S4 ultrasonic
+		S1 Multiplexer
+    	- C2 Gyro
+      - C3 Colour
+		S2 Sound
+		S3 Touch
+		S4 Ultrasonic
 
-		A Top left wheel
-		B Back big motor
+		A Front Left Wheel
+		B Back Wheel
 		C Belt
-		D top right wheel
+		D Front Right Wheel
 	*/
 
 	// Initialize motor encoders
@@ -65,7 +62,6 @@ task main ()
 	nMotorEncoder[motorB] = 0;
 	nMotorEncoder[motorC] = 0;
 	nMotorEncoder[motorD] = 0;
-
 
 	// Display group and name
 	displayString(5, "Group: 8-8,");
@@ -82,7 +78,7 @@ task main ()
 	do{
 		// Drive motors until possible stairs detected
 		driveMotorsFrontBack(SPEED_MID);
-		while(measureDist(TIME_INTERVAL) > 10)
+		while(measureDist(TIME_INTERVAL) > 20)
 		{}
 
 		// Drive 5 seconds slowly until aligned
@@ -107,7 +103,7 @@ task main ()
 	else
 	{
 		driveMotorsFrontBack(SPEED_SLOW);
-		while(SensorValue(**Color Sensor**) != (int) colorRed)
+		while(readMuxSensor(msensor_S1_3) != (int) colorRed)
 		{}
 	}
 
@@ -120,21 +116,21 @@ task main ()
 void configureSensors()
 {
 	SensorType[S3] = sensorEV3_Touch;
+  wait1Msec(50);
 
 	SensorType[S4] = sensorEV3_Ultrasonic;
-
-	SensorType[**Color Sensor**] = sensorEV3_Color;
-	wait1Msec(50);
-	SensorMode[**Color Sensor**] = modeEV3Color_Color;
-	wait1Msec(50);
+  wait1Msec(50);
 
 	//**Sound Sensor Config - To Be Added**
+	SensorType[S2] = sensorSoundDB;
+  wait1Msec(50);
 
-	SensorType[S2] = sensorEV3_Gyro;
-	wait1Msec(50);
-	SensorMode[S2] = modeEV3Gyro_Calibration;
+	SensorType[S1] = sensorEV3_GenericI2C;
 	wait1Msec(100);
-	SensorMode[S2] = modeEV3Gyro_RateAndAngle;
+  // configure each channel on the sensor mux
+	initSensorMux(msensor_S1_2, gyroAngle);
+	wait1Msec(50);
+  initSensorMux(msensor_S1_3, colorMeasureColor);
 	wait1Msec(50);
 }
 
@@ -170,13 +166,13 @@ void rotateRobot(int angle)
 	if(angle > 0)
 	{
 		driveMotorsFront(-TURN_SPEED,TURN_SPEED);
-		while(getGyroDegrees(S2) < newAngle)
+		while(readMuxSensor(msensor_S1_2) < newAngle)
 		{}
 	}
 	else
 	{
 		driveMotorsFront(TURN_SPEED,-TURN_SPEED);
-		while(getGyroDegrees(S2) > newAngle)
+		while(readMuxSensor(msensor_S1_2) > newAngle)
 		{}
 
 	}
@@ -239,13 +235,13 @@ float measureDist(float waitTime)
 {
 	float average = 0;
 	time1[T1] = 0;
-	while (time1[T1] > waitTime)
+	while (time1[T1] < waitTime)
 	{}
 	float reading1 = SensorValue(S4);
-	while (time1[T1] > waitTime*2)
+	while (time1[T1] < waitTime*2)
 	{}
 	float reading2 = SensorValue(S4);
-	while (time1[T1] > waitTime*3)
+	while (time1[T1] < waitTime*3)
 	{}
 	float reading3 = SensorValue(S4);
 	average = (reading1 + reading2 + reading3)/3.0;
@@ -259,15 +255,15 @@ void screamDetected (int soundLevel, float waitTime)
 	while (average < soundLevel)
 	{
 		time1[T1] = 0;
-		while (time1[T1] > waitTime)
+		while (time1[T1] < waitTime)
 		{}
-		float reading1 = SensorValue(**Sound Sensor**);
-		while (time1[T1] > waitTime*2)
+		float reading1 = SensorValue(S2);
+		while (time1[T1] < waitTime*2)
 		{}
-		float reading2 = SensorValue(**Sound Sensor**);
-		while (time1[T1] > waitTime*3)
+		float reading2 = SensorValue(S2);
+		while (time1[T1] < waitTime*3)
 		{}
-		float reading3 = SensorValue(**Sound Sensor**);
+		float reading3 = SensorValue(S2);
 		average = (reading1 + reading2 + reading3)/3.0;
 	}
 }

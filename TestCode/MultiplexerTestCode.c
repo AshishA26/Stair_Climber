@@ -37,7 +37,6 @@ task main()
 	if (!initSensorMux(msensor_S1_3, colorMeasureColor))
 		return;
 
-	resetGyro(msensor_S1_2);
 	while (!getButtonPress(buttonAny))
 	{
 		displayBigTextLine(8,"C2 %d",readMuxSensor(msensor_S1_2));
