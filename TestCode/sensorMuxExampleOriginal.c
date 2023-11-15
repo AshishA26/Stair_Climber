@@ -32,13 +32,16 @@ task main()
 	wait1Msec(100);
 
 	// configure each channel on the sensor mux
-	if (!initSensorMux(msensor_S1_2, gyroAngle))
+	if (!initSensorMux(msensor_S1_1, touchStateBump))
 		return;
-	if (!initSensorMux(msensor_S1_3, colorMeasureColor))
+	if (!initSensorMux(msensor_S1_2, sonarCM))
+		return;
+	if (!initSensorMux(msensor_S1_3, gyroAngle))
 		return;
 
 	while (!getButtonPress(buttonAny))
 	{
+		displayBigTextLine(4,"C1 %d",readMuxSensor(msensor_S1_1));
 		displayBigTextLine(8,"C2 %d",readMuxSensor(msensor_S1_2));
 		displayBigTextLine(12,"C3 %d",readMuxSensor(msensor_S1_3));
 		wait1Msec(250);
