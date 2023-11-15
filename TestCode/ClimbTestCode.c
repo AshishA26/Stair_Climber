@@ -1,7 +1,6 @@
 #include "UW_sensorMux.c"
 
 void configureSensors();
-void driveMotorsFront(int leftPower, int rightPower);
 void driveMotorsFrontBack(int motorPower);
 void driveMotorsFrontWithBelt(int motorPower);
 bool climb(int motorPower);
@@ -14,10 +13,9 @@ void moveRobotBackDown(int motorPower);
 const int SPEED_SLOW = 25;
 const int SPEED_MID = 40;
 const float TIME_INTERVAL = 5;
-const int MAX_DIST = 8;
+const int MAX_DIST = 10;
 const int CM_TO_ENC = 360/2.0*PI*3.4;
-const int ROBOT_LENGTH = 20;
-const int TURN_SPEED = 10;
+const int ROBOT_LENGTH = 10;
 
 task main ()
 {
@@ -42,7 +40,7 @@ task main ()
 		// Drive 5 seconds slowly until aligned
 		driveMotorsFrontBack(SPEED_SLOW);
 		time1[T1] = 0;
-		while(time1[T1] < 5000)
+		while(time1[T1] < 2000)
 		{}
 
     // Stop and climb
@@ -93,18 +91,11 @@ void driveMotorsFrontBack(int motorPower)
 	return;
 }
 
-// Drive only front motors (can be used for turning)
-void driveMotorsFront(int leftPower, int rightPower)
-{
-	motor[motorD] = rightPower;
-	motor[motorA] = leftPower;
-	return;
-}
-
 // Drive only front motors and belt
 void driveMotorsFrontWithBelt(int motorPower)
 {
 	motor[motorD] = motor[motorA] = motorPower;
+	motor[motorB] = -motorPower/20;
 	motor[motorC] = -motorPower;
 	return;
 }
@@ -182,7 +173,9 @@ void driveDist(int distance, int power)
 {
 	nMotorEncoder(motorA) = 0;
 	float distToDrive = distance*CM_TO_ENC;
-	driveMotorsFrontBack(power);
+	//driveMotorsFrontBack(power);
+	motor[motorA]=motor[motorD]=25;
+	motor[motorB]=-25
 	while (fabs(nMotorEncoder(motorA)) < distToDrive)
 	{}
 	driveMotorsFrontBack(0);
