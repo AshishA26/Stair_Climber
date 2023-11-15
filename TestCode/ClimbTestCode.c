@@ -13,9 +13,9 @@ void moveRobotBackDown(int motorPower);
 const int SPEED_SLOW = 25;
 const int SPEED_MID = 40;
 const float TIME_INTERVAL = 5;
-const int MAX_DIST = 10;
+const int MAX_DIST = 20;
 const int CM_TO_ENC = 360/2.0*PI*3.4;
-const int ROBOT_LENGTH = 10;
+const int ROBOT_LENGTH = 20;
 
 task main ()
 {
@@ -95,7 +95,7 @@ void driveMotorsFrontBack(int motorPower)
 void driveMotorsFrontWithBelt(int motorPower)
 {
 	motor[motorD] = motor[motorA] = motorPower;
-	motor[motorB] = -motorPower/20;
+	motor[motorB] = -motorPower/25;
 	motor[motorC] = -motorPower;
 	return;
 }
@@ -173,9 +173,7 @@ void driveDist(int distance, int power)
 {
 	nMotorEncoder(motorA) = 0;
 	float distToDrive = distance*CM_TO_ENC;
-	//driveMotorsFrontBack(power);
-	motor[motorA]=motor[motorD]=25;
-	motor[motorB]=-25
+	driveMotorsFrontBack(power);
 	while (fabs(nMotorEncoder(motorA)) < distToDrive)
 	{}
 	driveMotorsFrontBack(0);
