@@ -96,7 +96,7 @@ void driveMotorsFrontWithBelt(int motorPower)
 {
 	motor[motorD] = motor[motorA] = motorPower;
 	motor[motorB] = -motorPower/25;
-	motor[motorC] = -motorPower;
+	motor[motorC] = motorPower;
 	return;
 }
 
@@ -135,8 +135,8 @@ bool climb(int motorPower)
 // Move belt back down
 void moveRobotBackDown(int motorPower)
 {
-    driveMotorsFrontWithBelt(-motorPower);
-		while(nMotorEncoder(motorC) > 0)
+    driveMotorsFrontWithBelt(motorPower);
+		while(abs(nMotorEncoder(motorC)) > 0)
 		{}
     driveMotorsFrontWithBelt(0);
 }
@@ -144,7 +144,7 @@ void moveRobotBackDown(int motorPower)
 // Pull belt back up
 void pullBeltBackUp(int motorPower)
 {
-	motor[motorC] = motorPower;
+	motor[motorC] = -motorPower;
 	while(abs(nMotorEncoder(motorC)) > 0)
 	{}
 	motor[motorC] = 0;

@@ -7,15 +7,15 @@ void driveMotorsFrontWithBelt(int motorPower) // drive only front motors and bel
 
 void moveBeltBackDown(int motorPower)
 {
-    motor[motorC] = -motorPower;
-		while(abs(nMotorEncoder(motorC)) < 100)
+    motor[motorC] = motorPower;
+		while(abs(nMotorEncoder(motorC)) < 400)
 		{}
     motor[motorC] = 0;
 }
 
 void pullBeltBackUp(int motorPower)
 {
-	motor[motorC] = motorPower;
+	motor[motorC] = -motorPower;
 	while(abs(nMotorEncoder(motorC)) > 0)
 	{}
 	motor[motorC] = 0;

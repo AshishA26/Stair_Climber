@@ -17,7 +17,7 @@ void driveMotorsFront(int leftPower, int rightPower)
 void driveMotorsFrontWithBelt(int motorPower)
 {
 	motor[motorD] = motor[motorA] = motorPower;
-	motor[motorC] = -motorPower;
+	motor[motorC] = motorPower;
 	return;
 }
 
