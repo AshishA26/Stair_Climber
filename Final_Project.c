@@ -31,12 +31,12 @@ void moveRobotBackDown(int motorPower);
 bool climbAllSteps(bool failedClimb);
 
 // Constants
-const int SPEED_SLOW = 25;
-const int SPEED_MID = 40;
-const float SOUND_LEVEL = 60;
-const float TIME_INTERVAL = 5;
-const int MAX_DIST = 8;
-const int CM_TO_ENC = 360 / 2.0 * PI * 3.4;
+const int SPEED_SLOW = 20;
+const int SPEED_MID = 25;
+const float SOUND_LEVEL = 20;
+const float TIME_INTERVAL = 10;
+const int MAX_DIST = 20;
+const int CM_TO_ENC = 360 / (2.0 * PI * 3.4);
 const int ROBOT_LENGTH = 20;
 const int TURN_SPEED = 10;
 
@@ -155,15 +155,16 @@ bool climbAllSteps(bool failedClimb)
 		// Drive 5 seconds slowly until aligned
 		driveMotorsFrontBack(SPEED_SLOW);
 		time1[T1] = 0;
-		while (time1[T1] < 5000)
+		while (time1[T1] < 1750)
 		{}
 
 		// Stop and climb
 		driveMotorsFrontBack(0);
-		failedClimb = climb(SPEED_SLOW);
+		motor[motorB]=0;
+		failedClimb = climb(SPEED_MID);
 
 		// While the robot has not cleared the stair and has not reached max height
-	} while (measureDist(TIME_INTERVAL) < MAX_DIST && !failedClimb);
+	} while (measureDist(TIME_INTERVAL) < 50 && !failedClimb);
 
 	return failedClimb;
 }
@@ -175,12 +176,16 @@ bool climb(int motorPower)
 	driveMotorsFrontWithBelt(motorPower);
 	// While stair not cleared and max height not reached
 	// (Because SensorValue[ULTRASONIC] is 255 when climbing. MAX_DIST is the width of each step = 30 for now)
-	while (SensorValue[S4] < MAX_DIST && SensorValue[S3] == 0)
-	{}
+	float distMeasured = 0;
+	while ((distMeasured < MAX_DIST || distMeasured > 100) && SensorValue[S3] == 0)
+	{
+		distMeasured = measureDist(TIME_INTERVAL);
+		displayString(10, "%f", distMeasured);
+	}
 	// Climb an additional distance to account for wheel offset
-	int reading1 = nMotorEncoder(motorA);
-	while (abs(nMotorEncoder(motorA)) < reading1 + (5 * CM_TO_ENC) && SensorValue[S3] == 0)
-	{}
+	//int reading1 = nMotorEncoder(motorA);
+	//while (abs(nMotorEncoder(motorA)) < reading1 + (2 * CM_TO_ENC) && SensorValue[S3] == 0)
+	//{}
 
 	// Failed to climb, go back down
 	if (SensorValue[S3] == 1)
@@ -224,14 +229,14 @@ float measureDist(float waitTime)
 	time1[T1] = 0;
 	while (time1[T1] < waitTime)
 	{}
-	float reading1 = SensorValue(S4);
+	int reading1 = SensorValue(S4);
 	while (time1[T1] < waitTime * 2)
 	{}
-	float reading2 = SensorValue(S4);
+	int reading2 = SensorValue(S4);
 	while (time1[T1] < waitTime * 3)
 	{}
-	float reading3 = SensorValue(S4);
-	average = (reading1 + reading2 + reading3) / 3.0;
+	int reading3 = SensorValue(S4);
+	average = (float)(reading1 + reading2 + reading3) / 3.0;
 	return average;
 }
 
