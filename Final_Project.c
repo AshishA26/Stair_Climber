@@ -73,7 +73,7 @@ task main()
 	screamDetected(SOUND_LEVEL, TIME_INTERVAL);
 
 	// Play sound
-	playSoundFile("Blip1");
+	//playSoundFile("Blip1");
 
 	// Start climbing
 	bool failedClimb = false;
@@ -94,7 +94,7 @@ task main()
 
 	// Stop and play sound
 	driveMotorsFrontBack(0);
-	playSoundFile("Blip1");
+	//playSoundFile("Blip1");
 }
 
 // Sensor Configuration
