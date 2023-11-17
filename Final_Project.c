@@ -153,15 +153,21 @@ bool climbAllSteps(bool failedClimb)
 		{}
 
 		// Drive 5 seconds slowly until aligned
+		// driveMotorsFrontBack(SPEED_SLOW);
+		// time1[T1] = 0;
+		// while (time1[T1] < 1750)
+		// {}
+
 		driveMotorsFrontBack(SPEED_SLOW);
-		time1[T1] = 0;
-		while (time1[T1] < 1750)
+		int prevAngle = readMuxSensor(msensor_S1_2);
+		int newAngle = prevAngle + 5;
+		while (readMuxSensor(msensor_S1_2) < newAngle)
 		{}
 
 		// Stop and climb
 		driveMotorsFrontBack(0);
 		motor[motorB]=0;
-		failedClimb = climb(SPEED_MID);
+		failedClimb = climb(SPEED_SLOW);
 
 		// While the robot has not cleared the stair and has not reached max height
 	} while (measureDist(TIME_INTERVAL) < 50 && !failedClimb);
