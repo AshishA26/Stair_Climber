@@ -43,7 +43,7 @@ void moveRobotBackDown(int motorPower);
 bool climbAllSteps(bool failedClimb);
 
 // Constants
-const int SPEED_SLOW = 20;
+const int SPEED_SLOW = 10;
 const int SPEED_MID = 25;
 const float SOUND_LEVEL = 20;
 const float TIME_INTERVAL = 10;
@@ -146,7 +146,7 @@ void driveMotorsFront(int leftPower, int rightPower)
 // Drive only front motors and belt
 void driveMotorsFrontWithBelt(int motorPower)
 {
-	motor[motorD] = motor[motorA] = motorPower;
+	motor[motorD] = motor[motorA] = (int)(motorPower*0.5);
 	motor[motorC] = motorPower;
 	return;
 }
@@ -158,7 +158,9 @@ bool climbAllSteps(bool failedClimb)
 		// Drive motors until possible stairs detected
 		driveMotorsFrontBack(SPEED_MID);
 		while (measureDist(TIME_INTERVAL) > 20)
-		{}
+		{
+			displayBigTextLine(1,"Sonar is %d", measureDist(TIME_INTERVAL));
+		}
 
 		// Drive 5 seconds slowly until aligned
 		// driveMotorsFrontBack(SPEED_SLOW);
@@ -167,15 +169,21 @@ bool climbAllSteps(bool failedClimb)
 		// {}
 
 		resetGyro(S1);
-		int prevAngle = getGyroDegrees(S1);
+		//int prevAngle = getGyroDegrees(S1);
 		driveMotorsFrontBack(SPEED_SLOW);
-		int newAngle = prevAngle + 5;
+		int newAngle = 5;
 		while (getGyroDegrees(S1) < newAngle)
-		{}
+		{
+			displayBigTextLine(3,"Gyro is %d", getGyroDegrees(S1));
+		}
 
+		displayBigTextLine(5,"Ready to climb");
 		// Stop and climb
-		//driveMotorsFrontBack(0);
-		motor[motorB]=0;
+		driveMotorsFrontBack(0);
+		//motor[motorB]=0;
+		//wait1Msec(10000);
+		//stopAllTasks();
+
 		failedClimb = climb(SPEED_SLOW);
 
 		// While the robot has not cleared the stair and has not reached max height
@@ -195,24 +203,31 @@ bool climb(int motorPower)
 	while ((distMeasured < MAX_DIST || distMeasured > 100) && SensorValue[S3] == 0)
 	{
 		distMeasured = measureDist(TIME_INTERVAL);
-		//displayString(10, "%f", distMeasured);
+		displayBigTextLine(7, "Sonar is %f", distMeasured);
 	}
+
 	// Climb an additional distance to account for wheel offset
 	int reading1 = nMotorEncoder[motorC];
 	while (abs(nMotorEncoder[motorC]) < reading1 + (2 * CM_TO_ENC) && SensorValue[S3] == 0)
-	{}
+	{
+			displayBigTextLine(9,"Going additional 2cm");
+	}
 
 	// Failed to climb, go back down
 	if (SensorValue[S3] == 1)
 	{
+		displayString(6,"Failed, going downs");
 		moveRobotBackDown(motorPower);
 		return true;
 	}
 	// Drive robot forward and pull up belt
 	else
 	{
+		displayString(7,"Going forward 10cm");
 		driveMotorsFrontWithBelt(0);
 		driveDist(ROBOT_LENGTH, motorPower);
+
+		displayString(8,"Pulling belt up");
 		pullBeltBackUp(SPEED_SLOW);
 
 		return false;
