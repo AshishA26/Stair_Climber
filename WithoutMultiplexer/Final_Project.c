@@ -86,7 +86,7 @@ task main()
 	// Back away from stair
 	if (failedClimb)
 	{
-		driveDist(5, -SPEED_MID);
+		driveDist(5, -SPEED_SLOW);
 	}
 	// Drive while red isn't detected
 	else
@@ -137,7 +137,7 @@ void driveAllMotors(int motorPower)
 {
 	motor[MOTOR_FR] = motor[MOTOR_FL] = motorPower;
 	motor[MOTOR_BELT] = (int)(motorPower*2);
-	motor[MOTOR_BACK] = (int)(-motorPower*0.2); //Back motor is backwards
+	motor[MOTOR_BACK] = (int)(-motorPower*0.1); //Back motor is backwards
 	return;
 }
 
@@ -191,6 +191,7 @@ bool climb(int motorPower)
 		driveDist(ROBOT_LENGTH, motorPower);
 
 		displayBigTextLine(5,"Pulling belt up");
+		driveMotorsFrontBack(motorPower);
 		pullBeltBackUp(SPEED_SLOW);
 
 		return false;
