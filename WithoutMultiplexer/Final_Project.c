@@ -174,7 +174,8 @@ bool climbAllSteps(bool failedClimb)
 		{}
 
 		// Stop and climb
-		driveMotorsFrontBack(0);
+		//driveMotorsFrontBack(0);
+		motor[motorB]=0;
 		failedClimb = climb(SPEED_SLOW);
 
 		// While the robot has not cleared the stair and has not reached max height
