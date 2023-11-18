@@ -7,5 +7,10 @@ task main()
 	SensorMode[S1] = modeEV3Gyro_RateAndAngle;
 	wait1Msec(50);
 
-	displayString(8,"%d",getGyroDegrees(S1));
+	time1[T2] = 0;
+	while(time1[T2] < 10000)
+	{
+		displayString(8,"%d",getGyroDegrees(S1));
+	}
+
 }

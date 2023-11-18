@@ -1,4 +1,4 @@
-const float SOUND_LEVEL = 60;
+const float SOUND_LEVEL = 30;
 const float TIME_INTERVAL = 5;
 
 void screamDetected (int soundLevel, float waitTime)
@@ -9,14 +9,14 @@ void screamDetected (int soundLevel, float waitTime)
 		time1[T1] = 0;
 		while (time1[T1] < waitTime)
 		{}
-		float reading1 = SensorValue(S2);
+		int reading1 = SensorValue(S2);
 		while (time1[T1] < waitTime*2)
 		{}
-		float reading2 = SensorValue(S2);
+		int reading2 = SensorValue(S2);
 		while (time1[T1] < waitTime*3)
 		{}
-		float reading3 = SensorValue(S2);
-		average = (reading1 + reading2 + reading3)/3.0;
+		int reading3 = SensorValue(S2);
+		average = (float)(reading1 + reading2 + reading3)/3.0;
 		displayString(7, "%f", average);
 	}
 	displayString(5,"Too loud");

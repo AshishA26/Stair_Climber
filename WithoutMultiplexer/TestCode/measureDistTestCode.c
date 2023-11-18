@@ -6,14 +6,14 @@ float measureDist(float waitTime)
 	time1[T1] = 0;
 	while (time1[T1] < waitTime)
 	{}
-	float reading1 = SensorValue(S4);
+	int reading1 = SensorValue(S4);
 	while (time1[T1] < waitTime*2)
 	{}
-	float reading2 = SensorValue(S4);
+	int reading2 = SensorValue(S4);
 	while (time1[T1] < waitTime*3)
 	{}
-	float reading3 = SensorValue(S4);
-	average = (reading1 + reading2 + reading3)/3.0;
+	int reading3 = SensorValue(S4);
+	average = (float)(reading1 + reading2 + reading3)/3.0;
 	return average;
 }
 

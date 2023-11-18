@@ -37,9 +37,9 @@ task main ()
   //wait1Msec(1000);
   //driveMotorsFront(0, 0);
 
-  driveMotorsFrontBack(20);
-  wait1Msec(1000);
-  driveMotorsFrontBack(0);
+  //driveMotorsFrontBack(20);
+  //wait1Msec(1000);
+  //driveMotorsFrontBack(0);
 
   //driveMotorsFrontWithBelt(20);
   //driveMotorsFrontBack(20);
@@ -47,5 +47,5 @@ task main ()
   //driveMotorsFrontWithBelt(0);
   //driveMotorsFrontBack(0);
 
-	//driveDist(20, 20);
+	driveDist(20, 20);
 }
