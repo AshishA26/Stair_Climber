@@ -27,12 +27,10 @@
 		D Front Right Wheel
 	*/
 
-//#include "UW_sensorMux.c"
-
 void configureSensors();
-void driveMotorsFront(int leftPower, int rightPower);
+// void driveMotorsFront(int leftPower, int rightPower);
 void driveMotorsFrontBack(int motorPower);
-void driveMotorsFrontWithBelt(int motorPower);
+void driveAllMotors(int motorPower);
 //void rotateRobot(int angle);
 bool climb(int motorPower);
 void screamDetected(int soundLevel, float waitTime);
@@ -101,16 +99,6 @@ task main()
 // Sensor Configuration
 void configureSensors()
 {
-	SensorType[S3] = sensorEV3_Touch;
-	wait1Msec(50);
-
-	SensorType[S4] = sensorEV3_Ultrasonic;
-	wait1Msec(50);
-
-	//**Sound Sensor Config - To Be Added**
-	SensorType[S2] = sensorSoundDB;
-	wait1Msec(50);
-
 	SensorType[S1] = sensorEV3_Gyro;
 	wait1Msec(50);
 	SensorMode[S1] = modeEV3Gyro_Calibration;
@@ -118,13 +106,14 @@ void configureSensors()
 	SensorMode[S1] = modeEV3Gyro_RateAndAngle;
 	wait1Msec(50);
 
-	// SensorType[S1] = sensorEV3_GenericI2C;
-	// wait1Msec(100);
-	// // configure each channel on the sensor mux
-	// initSensorMux(msensor_S1_2, gyroAngle);
-	// wait1Msec(50);
-	// initSensorMux(msensor_S1_3, colorMeasureColor);
-	// wait1Msec(50);
+	SensorType[S2] = sensorSoundDB;
+	wait1Msec(50);
+	
+	SensorType[S3] = sensorEV3_Touch;
+	wait1Msec(50);
+
+	SensorType[S4] = sensorEV3_Ultrasonic;
+	wait1Msec(50);
 }
 
 // Drive front and back motors
@@ -135,19 +124,12 @@ void driveMotorsFrontBack(int motorPower)
 	return;
 }
 
-// Drive only front motors (can be used for turning)
-void driveMotorsFront(int leftPower, int rightPower)
-{
-	motor[motorD] = rightPower;
-	motor[motorA] = leftPower;
-	return;
-}
-
 // Drive only front motors and belt
-void driveMotorsFrontWithBelt(int motorPower)
+void driveAllMotors(int motorPower)
 {
 	motor[motorD] = motor[motorA] = (int)(motorPower*0.5);
 	motor[motorC] = motorPower;
+	motor[motorB] = (int)(motorPower*0.2);
 	return;
 }
 
@@ -162,14 +144,7 @@ bool climbAllSteps(bool failedClimb)
 			displayBigTextLine(1,"Sonar is %d", measureDist(TIME_INTERVAL));
 		}
 
-		// Drive 5 seconds slowly until aligned
-		// driveMotorsFrontBack(SPEED_SLOW);
-		// time1[T1] = 0;
-		// while (time1[T1] < 1750)
-		// {}
-
 		resetGyro(S1);
-		//int prevAngle = getGyroDegrees(S1);
 		driveMotorsFrontBack(SPEED_SLOW);
 		int newAngle = 5;
 		while (getGyroDegrees(S1) < newAngle)
@@ -178,11 +153,6 @@ bool climbAllSteps(bool failedClimb)
 		}
 
 		displayBigTextLine(5,"Ready to climb");
-		// Stop and climb
-		driveMotorsFrontBack(0);
-		//motor[motorB]=0;
-		//wait1Msec(10000);
-		//stopAllTasks();
 
 		failedClimb = climb(SPEED_SLOW);
 
@@ -196,38 +166,29 @@ bool climbAllSteps(bool failedClimb)
 bool climb(int motorPower)
 {
 	nMotorEncoder[motorC] = 0;
-	driveMotorsFrontWithBelt(motorPower);
-	// While stair not cleared and max height not reached
-	// (Because SensorValue[ULTRASONIC] is 255 when climbing. MAX_DIST is the width of each step = 30 for now)
-	float distMeasured = 0;
-	while ((distMeasured < MAX_DIST || distMeasured > 100) && SensorValue[S3] == 0)
-	{
-		distMeasured = measureDist(TIME_INTERVAL);
-		displayBigTextLine(7, "Sonar is %f", distMeasured);
-	}
+	driveAllMotors(motorPower);
 
-	// Climb an additional distance to account for wheel offset
-	int reading1 = nMotorEncoder[motorC];
-	while (abs(nMotorEncoder[motorC]) < reading1 + (2 * CM_TO_ENC) && SensorValue[S3] == 0)
+	// While stair not cleared and max height not reached
+	while (getGyroDegrees(S1)>-5 && SensorValue[S3] == 0)
 	{
-			displayBigTextLine(9,"Going additional 2cm");
+		displayBigTextLine(3,"Gyro is %d", getGyroDegrees(S1));
 	}
 
 	// Failed to climb, go back down
 	if (SensorValue[S3] == 1)
 	{
-		displayString(6,"Failed, going downs");
+		displayBigTextLine(5,"Failed, going down");
 		moveRobotBackDown(motorPower);
 		return true;
 	}
 	// Drive robot forward and pull up belt
 	else
 	{
-		displayString(7,"Going forward 10cm");
-		driveMotorsFrontWithBelt(0);
+		displayBigTextLine(5,"Going forward 10cm");
+		driveAllMotors(0);
 		driveDist(ROBOT_LENGTH, motorPower);
 
-		displayString(8,"Pulling belt up");
+		displayBigTextLine(5,"Pulling belt up");
 		pullBeltBackUp(SPEED_SLOW);
 
 		return false;
@@ -237,10 +198,10 @@ bool climb(int motorPower)
 // Move robot back down
 void moveRobotBackDown(int motorPower)
 {
-	driveMotorsFrontWithBelt(-motorPower);
+	driveAllMotors(-motorPower);
 	while (abs(nMotorEncoder[motorC]) > 0)
 	{}
-	driveMotorsFrontWithBelt(0);
+	driveAllMotors(0);
 }
 
 // Pull belt back up
@@ -301,6 +262,13 @@ void driveDist(int distance, int power)
 	driveMotorsFrontBack(0);
 }
 
+// Drive only front motors (can be used for turning)
+// void driveMotorsFront(int leftPower, int rightPower)
+// {
+// 	motor[motorD] = rightPower;
+// 	motor[motorA] = leftPower;
+// 	return;
+// }
 
 // // Rotate robot
 // void rotateRobot(int angle)
