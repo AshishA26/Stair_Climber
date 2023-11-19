@@ -23,6 +23,15 @@
 				as this file.
 */
 
+/*
+Constraints:
+- Can go up 1, 2, or 3 books
+- Can go down 1 book
+- Stops at the color green
+- Start on left side of books as it turns slightly right
+
+*/
+
 	/*
 		S1 Gyro
 		S2 Sound
@@ -49,7 +58,7 @@ void moveRobotBackDown(int motorPower);
 bool climbAllSteps(bool failedClimb);
 
 // Constants
-const int SPEED_SLOW = 15;
+const int SPEED_SLOW = 20;
 //const int SPEED_MID = 25;
 const float SOUND_LEVEL = 20;
 const float TIME_INTERVAL = 10;
@@ -87,14 +96,6 @@ task main()
 	if (failedClimb)
 	{
 		driveDist(5, -SPEED_SLOW);
-	}
-	// Drive while red isn't detected
-	else
-	{
-		driveMotorsFrontBack(SPEED_SLOW, SPEED_SLOW);
-
-		while (SensorValue[S4] != (int)colorRed)
-		{}
 	}
 
 	// Stop and play sound
@@ -152,17 +153,20 @@ bool climbAllSteps(bool failedClimb)
 		resetGyro(S1);
 		driveMotorsFrontBack(SPEED_SLOW, SPEED_SLOW);
 		int newAngle = 5;
-		while (getGyroDegrees(S1) < newAngle)
+		while (getGyroDegrees(S1) < newAngle && SensorValue[S4] != (int)colorGreen)
 		{
 			displayBigTextLine(3,"Gyro is %d", getGyroDegrees(S1));
 		}
 
-		displayBigTextLine(5,"Ready to climb");
+		if (SensorValue[S4] != (int)colorGreen)
+		{
+			displayBigTextLine(5,"Ready to climb");
 
-		failedClimb = climb(SPEED_SLOW);
+			failedClimb = climb(SPEED_SLOW);
+		}
 
 		// While the robot has not cleared the stair and has not reached max height
-	} while (!failedClimb); //TODO: CHECK COLOR SENSOR
+	} while (!failedClimb && SensorValue[S4] != (int)colorGreen);
 
 	return failedClimb;
 }
@@ -194,7 +198,7 @@ bool climb(int motorPower)
 		driveDist(ROBOT_LENGTH, motorPower);
 
 		displayBigTextLine(5,"Pulling belt up");
-		driveMotorsFrontBack(motorPower+10, motorPower);
+		driveMotorsFrontBack(motorPower+5, motorPower);
 		//driveMotorsFrontBack(motorPower, motorPower);
 		pullBeltBackUp(SPEED_SLOW);
 
