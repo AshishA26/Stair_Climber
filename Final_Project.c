@@ -310,23 +310,46 @@ void climbDownAllSteps(int motorPower)
 
 	// Start going backwards
 	driveMotorsFrontBack(-motorPower, -motorPower);
-	//wait1Msec(1000);
+	wait1Msec(1000);
 	// While loop that only exits if it detects the color green and it is on a flat surface
 
-  int change = 0, oldDeg = 0;
-  time1[T1] = 0;
-  int oldTime = time1[T1];
-  while((time1[T1] - oldTime) < 2000 && change < 5)
-  {
-    oldDeg = getGyroDegrees(S1);
-    wait1Msec(50);
-  	change = abs(getGyroDegrees(S1) - oldDeg);
-  }
 
-//   bool isGoodToStop = false;
-// 	while(!isGoodToStop)
-// 	{
 
+  bool isGoodToStop = false;
+ 	while(!isGoodToStop)
+ 	{
+		//int change = 10, oldDeg = 0;
+ 	//	while (change > 5)
+ 	//	{
+ 	//		oldDeg = abs(getGyroDegrees(S1));
+	 //   wait1Msec(50);
+	 // 	change = abs(getGyroDegrees(S1) - oldDeg);
+ 	//	}
+
+ 	//	time1[T1] = 0;
+ 	//	while(time1[T1] < 2000
+
+ 		int change = 0, oldDeg = 0;
+	  time1[T1] = 0;
+	  //int oldTime = time1[T1];
+	  while(time1[T1] < 4000)
+	  {
+	    oldDeg = abs(getGyroDegrees(S1));
+	    wait1Msec(50);
+	  	int changex = abs(getGyroDegrees(S1));
+	  	change = abs(changex - oldDeg);
+	  	displayBigTextLine(7,"Change is %d", change);
+	  	if(change > 5)
+	  	{
+	  		displayBigTextLine(9,"Went down a step");
+	  		time1[T1] = 0;
+	  	}
+	  }
+
+	  displayBigTextLine(5,"Exited while loop");
+
+	  	displayBigTextLine(7,"Stopping bot, c is %d", change);
+	  	isGoodToStop = true;
 
 // 		if (SensorValue[S4] == (int)colorGreen && getGyroDegrees(S1)<TILT_AMOUNT_FOR_CLIMB_DOWN)
 // 		// If the robot is on a flat surface, the robot will be in its pyramid shape, thus having an angle less than about -10.
@@ -334,7 +357,7 @@ void climbDownAllSteps(int motorPower)
 // 		{
 // 			isGoodToStop = true;
 // 		}
-// 	}
+ 	}
 
 	// Stop motors
 	driveMotorsFrontBack(0, 0);
