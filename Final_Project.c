@@ -6,37 +6,37 @@
 // Used for mapping names to motorA, motorB, etc. to make the code easier to read
 
 /*
-Samuel Ke, Ashish Agrahari, Svamin Bhatnagar, and Jacob Zhuang
-Lego EV3 Group 8-8
-11/20/2023
-Robot Name: Bertha
-Version: 1.0
-Description: Stair Climbing Robot
-Acknowledgements:
-- https://www.robotc.net/files/pdf/lego-natural-language/NL_NXT_Quick.pdf
-- http://cmra.rec.ri.cmu.edu/products/teachingmindstorms/sensing/volumespeed/documents/Sensing_SpeedBasedVolume.pdf
-- https://www.robotc.net/files/pdf/lego-natural-language/NL_TETRIX_Quick.pdf
-- https://www.youtube.com/watch?v=kjoKC0uWtTo&ab_channel=hundredvisionsguy
-- https://robotics.stackexchange.com/questions/751/confused-about-the-variables-in-robotc
+	Samuel Ke, Ashish Agrahari, Svamin Bhatnagar, and Jacob Zhuang
+	Lego EV3 Group 8-8
+	11/20/2023
+	Robot Name: Bertha
+	Version: 1.0
+	Description: Stair Climbing Robot
+	Acknowledgements:
+	- https://www.robotc.net/files/pdf/lego-natural-language/NL_NXT_Quick.pdf
+	- http://cmra.rec.ri.cmu.edu/products/teachingmindstorms/sensing/volumespeed/documents/Sensing_SpeedBasedVolume.pdf
+	- https://www.robotc.net/files/pdf/lego-natural-language/NL_TETRIX_Quick.pdf
+	- https://www.youtube.com/watch?v=kjoKC0uWtTo&ab_channel=hundredvisionsguy
+	- https://robotics.stackexchange.com/questions/751/confused-about-the-variables-in-robotc
 */
 
 /*
-Constraints:
-- Can go up 1 or 2 books, possibly 3
-- Can go down 1 or 2 books
-- Stops at the color green
-- Start on left side of books as it turns slightly right
+	Constraints:
+	- Can go up 1 or 2 books, possibly 3
+	- Can go down 1 or 2 books
+	- Stops at the color green
+	- Start on left side of books as it turns slightly right
 */
 
 /*
-S1 Gyro
-S2 Sound
-S3 Touch
-S4 Color
-A Front Left Wheel
-B Back Wheel
-C Belt
-D Front Right Wheel
+	S1 Gyro
+	S2 Sound
+	S3 Touch
+	S4 Color
+	A Front Left Wheel
+	B Back Wheel
+	C Belt
+	D Front Right Wheel
 */
 
 // Function prototypes:
@@ -150,7 +150,7 @@ void configureSensors()
 void driveMotorsFrontBack(int motorPowerF,int motorPowerB)
 {
 	motor[MOTOR_FR] = motor[MOTOR_FL] = motorPowerF;
-	motor[MOTOR_BACK] = -motorPowerB; //Back motor is physically backwards
+	motor[MOTOR_BACK] = -motorPowerB; // Back motor is physically backwards
 	return;
 }
 
@@ -159,7 +159,7 @@ void driveAllMotorsForClimbing(int motorPower)
 {
 	motor[MOTOR_FR] = motor[MOTOR_FL] = motorPower;
 	motor[MOTOR_BELT] = (int)(motorPower*2);
-	motor[MOTOR_BACK] = (int)(-motorPower*0.2); //Back motor is physically backwards
+	motor[MOTOR_BACK] = (int)(-motorPower*0.2); // Back motor is physically backwards
 
 	// The ratios above were found through testing
 
