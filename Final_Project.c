@@ -59,7 +59,7 @@ const float TIME_INTERVAL = 10;
 const int CM_TO_ENC = 360 / (2.0 * PI * 3.4);
 const int ROBOT_LENGTH = 10;
 const int TILT_AMOUNT = 5;
-const int ENC_LIMIT_FOR_CLIMB_DOWN = 300;
+const int ENC_LIMIT_FOR_CLIMB_DOWN = 400;
 const int TILT_AMOUNT_FOR_CLIMB_DOWN = -10;
 
 task main()
@@ -310,24 +310,31 @@ void climbDownAllSteps(int motorPower)
 
 	// Start going backwards
 	driveMotorsFrontBack(-motorPower, -motorPower);
-
+	//wait1Msec(1000);
 	// While loop that only exits if it detects the color green and it is on a flat surface
-	bool isGoodToStop = false;
-	while(!isGoodToStop)
-	{
-		if (SensorValue[S4] == (int)colorGreen && getGyroDegrees(S1)<TILT_AMOUNT_FOR_CLIMB_DOWN)
-			// If the robot is on a flat surface, the robot will be in its pyramid shape, thus having an angle less than about -10.
-		// Found through testing
-		{
-			isGoodToStop = true;
-		}
 
-		// To test: If above doesn't work
-		// time1[T2] = 0;
-		// while (time1[T2]<2000)
-		// {
-		// }
-	}
+  int change = 0, oldDeg = 0;
+  time1[T1] = 0;
+  int oldTime = time1[T1];
+  while((time1[T1] - oldTime) < 2000 && change < 5)
+  {
+    oldDeg = getGyroDegrees(S1);
+    wait1Msec(50);
+  	change = abs(getGyroDegrees(S1) - oldDeg);
+  }
+
+//   bool isGoodToStop = false;
+// 	while(!isGoodToStop)
+// 	{
+
+
+// 		if (SensorValue[S4] == (int)colorGreen && getGyroDegrees(S1)<TILT_AMOUNT_FOR_CLIMB_DOWN)
+// 		// If the robot is on a flat surface, the robot will be in its pyramid shape, thus having an angle less than about -10.
+// 		// Found through testing
+// 		{
+// 			isGoodToStop = true;
+// 		}
+// 	}
 
 	// Stop motors
 	driveMotorsFrontBack(0, 0);
