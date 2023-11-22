@@ -24,7 +24,7 @@
 	Constraints:
 	- Can go up 1 or 2 books, possibly 3
 	- Can go down 1 or 2 books
-	- Stops at the color green
+	- Stops after it senses that it is not going down anymore steps
 	- Start on left side of books as it turns slightly right
 */
 
@@ -60,7 +60,8 @@ const int CM_TO_ENC = 360 / (2.0 * PI * 3.4);
 const int ROBOT_LENGTH = 10;
 const int TILT_AMOUNT = 5;
 const int ENC_LIMIT_FOR_CLIMB_DOWN = 400;
-const int TILT_AMOUNT_FOR_CLIMB_DOWN = -10;
+const int TILT_AMOUNT_FOR_CLIMB_DOWN = 5;
+const int WAIT_TIME_FOR_CLIMB_DOWN = 4000;
 
 task main()
 {
@@ -74,14 +75,15 @@ task main()
 	nMotorEncoder[MOTOR_FR] = 0;
 
 	// Display group and name
-	displayString(5, "Group: 8-8,");
-	displayString(6, "Robot: 33,");
-	displayString(7, "Name: Bertha");
+	displayString(1, "Group: 8-8,");
+	displayString(2, "Robot: 33,");
+	displayString(3, "Name: Bertha");
 
 	// Wait until a loud noise is detected
 	screamDetected(SOUND_LEVEL, TIME_INTERVAL);
 
 	// Play sound
+	displayBigTextLine(5,"Starting");
 	playSoundFile("Confirm");
 	wait1Msec(2000);
 
@@ -97,6 +99,7 @@ task main()
 
 		// Stop and play sound
 		driveMotorsFrontBack(0,0);
+		displayBigTextLine(5,"Failed climb");
 		playSoundFile("Error alarm");
 		wait1Msec(2000);
 	}
@@ -104,12 +107,16 @@ task main()
 	{
 		// Stop and play sound
 		driveMotorsFrontBack(0,0);
+		displayBigTextLine(5,"Please take");
+		displayBigTextLine(7,"your item");
 		playSoundFile("Confirm");
 		wait1Msec(2000);
 
 		// Wait until a loud noise is detected meaning that the
 		// user is ready for robot to go back down
 		screamDetected(SOUND_LEVEL, TIME_INTERVAL);
+		displayBigTextLine(7," ");
+		displayBigTextLine(5,"Going down");
 
 		// Play sound
 		playSoundFile("Confirm");
@@ -119,6 +126,7 @@ task main()
 		climbDownAllSteps(SPEED_SLOW);
 
 		// Play sound to show its done
+		displayBigTextLine(5,"Done delivery");
 		playSoundFile("Confirm");
 		wait1Msec(2000);
 	}
@@ -178,9 +186,7 @@ bool climbAllSteps(bool failedClimb)
 		resetGyro(S1);
 		driveMotorsFrontBack(SPEED_SLOW, SPEED_SLOW);
 		while (getGyroDegrees(S1) < TILT_AMOUNT && SensorValue[S4] != (int)colorGreen)
-		{
-			//displayBigTextLine(3,"Gyro is %d", getGyroDegrees(S1));
-		}
+		{}
 
 		// If it exited the while loop because of the tilt, then start climbing.
 		if (SensorValue[S4] != (int)colorGreen)
@@ -205,14 +211,12 @@ bool climb(int motorPower)
 
 	// While downwards tilt not detected, and touch sensor not activated (i.e. max height not reached)
 	while (getGyroDegrees(S1)>-TILT_AMOUNT && SensorValue[S3] == 0)
-	{
-		//displayBigTextLine(3,"Gyro is %d", getGyroDegrees(S1));
-	}
+	{}
 
 	// If it fails to climb, (i.e. max height was reached), go back down
 	if (SensorValue[S3] == 1)
 	{
-		displayBigTextLine(5,"Failed climb, going back down");
+		displayBigTextLine(5,"Failed climb");
 		moveRobotBackDown(motorPower);
 		return true;
 	}
@@ -220,7 +224,7 @@ bool climb(int motorPower)
 	// If it successfully climbed, drive robot forward the robot's front portion length and pull up the belt
 	else
 	{
-		displayBigTextLine(5,"Going forward the robot length");
+		displayBigTextLine(5,"Going forward");
 
 		// Stop belt motor
 		motor[MOTOR_BELT]=0;
@@ -311,52 +315,34 @@ void climbDownAllSteps(int motorPower)
 	// Start going backwards
 	driveMotorsFrontBack(-motorPower, -motorPower);
 	wait1Msec(1000);
-	// While loop that only exits if it detects the color green and it is on a flat surface
 
-
-
+	// Keep climbing down until the bot is good to stop
   bool isGoodToStop = false;
  	while(!isGoodToStop)
  	{
-		//int change = 10, oldDeg = 0;
- 	//	while (change > 5)
- 	//	{
- 	//		oldDeg = abs(getGyroDegrees(S1));
-	 //   wait1Msec(50);
-	 // 	change = abs(getGyroDegrees(S1) - oldDeg);
- 	//	}
+ 		int absChange = 0, oldDeg = 0;
+	  	time1[T1] = 0;
+	  	//int oldTime = time1[T1];
 
- 	//	time1[T1] = 0;
- 	//	while(time1[T1] < 2000
+		// While loop that only exits if has been on a flat surface for 4 seconds
+		while(time1[T1] < WAIT_TIME_FOR_CLIMB_DOWN)
+		{
+			//Check change in degrees
+			oldDeg = abs(getGyroDegrees(S1));
+			wait1Msec(50);
+			int change = abs(getGyroDegrees(S1));
+			absChange = abs(change - oldDeg);
 
- 		int change = 0, oldDeg = 0;
-	  time1[T1] = 0;
-	  //int oldTime = time1[T1];
-	  while(time1[T1] < 4000)
-	  {
-	    oldDeg = abs(getGyroDegrees(S1));
-	    wait1Msec(50);
-	  	int changex = abs(getGyroDegrees(S1));
-	  	change = abs(changex - oldDeg);
-	  	displayBigTextLine(7,"Change is %d", change);
-	  	if(change > 5)
-	  	{
-	  		displayBigTextLine(9,"Went down a step");
-	  		time1[T1] = 0;
-	  	}
-	  }
+			// If the change is >5, reset the timer
+			if(absChange > TILT_AMOUNT_FOR_CLIMB_DOWN)
+			{
+				//displayBigTextLine(5,"Went down a step");
+				time1[T1] = 0;
+			}
+		}
 
-	  displayBigTextLine(5,"Exited while loop");
-
-	  	displayBigTextLine(7,"Stopping bot, c is %d", change);
-	  	isGoodToStop = true;
-
-// 		if (SensorValue[S4] == (int)colorGreen && getGyroDegrees(S1)<TILT_AMOUNT_FOR_CLIMB_DOWN)
-// 		// If the robot is on a flat surface, the robot will be in its pyramid shape, thus having an angle less than about -10.
-// 		// Found through testing
-// 		{
-// 			isGoodToStop = true;
-// 		}
+	  	displayBigTextLine(5,"Stopping bot");
+	 	isGoodToStop = true;
  	}
 
 	// Stop motors
