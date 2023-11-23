@@ -6,37 +6,37 @@
 // Used for mapping names to motorA, motorB, etc. to make the code easier to read
 
 /*
-Samuel Ke, Ashish Agrahari, Svamin Bhatnagar, and Jacob Zhuang
-Lego EV3 Group 8-8
-11/20/2023
-Robot Name: Bertha
-Version: 1.0
-Description: Stair Climbing Robot
-Acknowledgements:
-- https://www.robotc.net/files/pdf/lego-natural-language/NL_NXT_Quick.pdf
-- http://cmra.rec.ri.cmu.edu/products/teachingmindstorms/sensing/volumespeed/documents/Sensing_SpeedBasedVolume.pdf
-- https://www.robotc.net/files/pdf/lego-natural-language/NL_TETRIX_Quick.pdf
-- https://www.youtube.com/watch?v=kjoKC0uWtTo&ab_channel=hundredvisionsguy
-- https://robotics.stackexchange.com/questions/751/confused-about-the-variables-in-robotc
+	Samuel Ke, Ashish Agrahari, Svamin Bhatnagar, and Jacob Zhuang
+	Lego EV3 Group 8-8
+	11/20/2023
+	Robot Name: Bertha
+	Version: 1.0
+	Description: Stair Climbing Robot
+	Acknowledgements:
+	- https://www.robotc.net/files/pdf/lego-natural-language/NL_NXT_Quick.pdf // Sound Config Code
+	- http://cmra.rec.ri.cmu.edu/products/teachingmindstorms/sensing/volumespeed/documents/Sensing_SpeedBasedVolume.pdf // Sound Config Code
+	- https://www.youtube.com/watch?v=kjoKC0uWtTo&ab_channel=hundredvisionsguy // Sound File Code
+	- https://robotics.stackexchange.com/questions/751/confused-about-the-variables-in-robotc // Motor Mapping Code
+	- https://www.bricklink.com/v2/catalog/catalogitem.page?P=62531#T=C // 3D Model - Lego Slider
 */
 
 /*
-Constraints:
-- Can go up 1 or 2 books, possibly 3
-- Can go down 1 or 2 books
-- Stops after it senses that it is not going down anymore steps
-- Start on left side of books as it turns slightly right
+	Constraints:
+	- Can go up 1 or 2 books, possibly 3
+	- Can go down 1 or 2 books
+	- Stops after it senses that it is not going down anymore steps
+	- Start on left side of books as it turns slightly right
 */
 
 /*
-S1 Gyro
-S2 Sound
-S3 Touch
-S4 Color
-A Front Left Wheel
-B Back Wheel
-C Belt
-D Front Right Wheel
+	S1 Gyro
+	S2 Sound
+	S3 Touch
+	S4 Color
+	A Front Left Wheel
+	B Back Wheel
+	C Belt
+	D Front Right Wheel
 */
 
 // Function prototypes:
@@ -60,7 +60,7 @@ const int CM_TO_ENC = 360 / (2.0 * PI * 3.4);
 const int ROBOT_LENGTH = 10;
 const int TILT_AMOUNT = 5;
 const int ENC_LIMIT_FOR_CLIMB_DOWN = 400;
-const int TILT_AMOUNT_FOR_CLIMB_DOWN = 2; //use to be 5
+const int TILT_AMOUNT_FOR_CLIMB_DOWN = 2;
 const int WAIT_TIME_FOR_CLIMB_DOWN = 4000;
 
 task main()
@@ -75,8 +75,8 @@ task main()
 	nMotorEncoder[MOTOR_FR] = 0;
 
 	// Display group and name
-	displayString(1, "Group: 8-8,");
-	displayString(2, "Robot: 33,");
+	displayString(1, "Group: 8-8");
+	displayString(2, "Robot: 33");
 	displayString(3, "Name: Bertha");
 
 	// Wait until a loud noise is detected
@@ -122,7 +122,7 @@ task main()
 		playSoundFile("Confirm");
 		wait1Msec(2000);
 
-		//Drive back down all stairs
+		// Drive back down all stairs
 		climbDownAllSteps(SPEED_SLOW);
 
 		// Play sound to show its done
@@ -181,7 +181,6 @@ void driveAllMotorsForClimbing(int motorPower, bool goingUp)
 		motor[MOTOR_BELT] = (int)(motorPower*2);
 		motor[MOTOR_BACK] = (int)(-motorPower); // Back motor is physically backwards
 	}
-
 	// The ratios above were found through testing
 
 	return;
@@ -190,7 +189,6 @@ void driveAllMotorsForClimbing(int motorPower, bool goingUp)
 // Function that climbs all steps
 bool climbAllSteps(bool failedClimb)
 {
-
 	// Loop that repeats until robot detects the color green or it fails the climb
 	do
 	{
@@ -205,7 +203,6 @@ bool climbAllSteps(bool failedClimb)
 		if (SensorValue[S4] != (int)colorGreen)
 		{
 			displayBigTextLine(5,"Ready to climb");
-
 			failedClimb = climb(SPEED_SLOW);
 		}
 	} while (!failedClimb && SensorValue[S4] != (int)colorGreen);
@@ -244,7 +241,6 @@ bool climb(int motorPower)
 
 		// Drive distance forward of ROBOT_LENGTH
 		driveDist(ROBOT_LENGTH, motorPower);
-
 		displayBigTextLine(5,"Pulling belt up");
 
 		// Switch on front and back motors while pulling up the belt to ensure robot does not tip over
@@ -362,7 +358,6 @@ void climbDownAllSteps(int motorPower)
 				time1[T1] = 0;
 			}
 		}
-
 		displayBigTextLine(5,"Stopping bot");
 		isGoodToStop = true;
 	}
