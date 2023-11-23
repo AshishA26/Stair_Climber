@@ -6,43 +6,43 @@
 // Used for mapping names to motorA, motorB, etc. to make the code easier to read
 
 /*
-	Samuel Ke, Ashish Agrahari, Svamin Bhatnagar, and Jacob Zhuang
-	Lego EV3 Group 8-8
-	11/20/2023
-	Robot Name: Bertha
-	Version: 1.0
-	Description: Stair Climbing Robot
-	Acknowledgements:
-	- https://www.robotc.net/files/pdf/lego-natural-language/NL_NXT_Quick.pdf
-	- http://cmra.rec.ri.cmu.edu/products/teachingmindstorms/sensing/volumespeed/documents/Sensing_SpeedBasedVolume.pdf
-	- https://www.robotc.net/files/pdf/lego-natural-language/NL_TETRIX_Quick.pdf
-	- https://www.youtube.com/watch?v=kjoKC0uWtTo&ab_channel=hundredvisionsguy
-	- https://robotics.stackexchange.com/questions/751/confused-about-the-variables-in-robotc
+Samuel Ke, Ashish Agrahari, Svamin Bhatnagar, and Jacob Zhuang
+Lego EV3 Group 8-8
+11/20/2023
+Robot Name: Bertha
+Version: 1.0
+Description: Stair Climbing Robot
+Acknowledgements:
+- https://www.robotc.net/files/pdf/lego-natural-language/NL_NXT_Quick.pdf
+- http://cmra.rec.ri.cmu.edu/products/teachingmindstorms/sensing/volumespeed/documents/Sensing_SpeedBasedVolume.pdf
+- https://www.robotc.net/files/pdf/lego-natural-language/NL_TETRIX_Quick.pdf
+- https://www.youtube.com/watch?v=kjoKC0uWtTo&ab_channel=hundredvisionsguy
+- https://robotics.stackexchange.com/questions/751/confused-about-the-variables-in-robotc
 */
 
 /*
-	Constraints:
-	- Can go up 1 or 2 books, possibly 3
-	- Can go down 1 or 2 books
-	- Stops after it senses that it is not going down anymore steps
-	- Start on left side of books as it turns slightly right
+Constraints:
+- Can go up 1 or 2 books, possibly 3
+- Can go down 1 or 2 books
+- Stops after it senses that it is not going down anymore steps
+- Start on left side of books as it turns slightly right
 */
 
 /*
-	S1 Gyro
-	S2 Sound
-	S3 Touch
-	S4 Color
-	A Front Left Wheel
-	B Back Wheel
-	C Belt
-	D Front Right Wheel
+S1 Gyro
+S2 Sound
+S3 Touch
+S4 Color
+A Front Left Wheel
+B Back Wheel
+C Belt
+D Front Right Wheel
 */
 
 // Function prototypes:
 void configureSensors();
 void driveMotorsFrontBack(int motorPowerF,int motorPowerB);
-void driveAllMotorsForClimbing(int motorPower);
+void driveAllMotorsForClimbing(int motorPower, bool goingUp);
 bool climb(int motorPower);
 void screamDetected(int soundLevel, float waitTime);
 void driveDist(int distance, int motorPower);
@@ -60,7 +60,7 @@ const int CM_TO_ENC = 360 / (2.0 * PI * 3.4);
 const int ROBOT_LENGTH = 10;
 const int TILT_AMOUNT = 5;
 const int ENC_LIMIT_FOR_CLIMB_DOWN = 400;
-const int TILT_AMOUNT_FOR_CLIMB_DOWN = 5;
+const int TILT_AMOUNT_FOR_CLIMB_DOWN = 2; //use to be 5
 const int WAIT_TIME_FOR_CLIMB_DOWN = 4000;
 
 task main()
@@ -152,6 +152,8 @@ void configureSensors()
 	wait1Msec(50);
 	SensorMode[S4] = modeEV3Color_Color;
 	wait1Msec(50);
+
+	return;
 }
 
 // Drive front and back motors at same speed
@@ -163,11 +165,22 @@ void driveMotorsFrontBack(int motorPowerF,int motorPowerB)
 }
 
 // Switch on all motors at different speeds for climbing
-void driveAllMotorsForClimbing(int motorPower)
+void driveAllMotorsForClimbing(int motorPower, bool goingUp)
 {
-	motor[MOTOR_FR] = motor[MOTOR_FL] = motorPower;
-	motor[MOTOR_BELT] = (int)(motorPower*2);
-	motor[MOTOR_BACK] = (int)(-motorPower*0.2); // Back motor is physically backwards
+	if (goingUp)
+	{
+		motor[MOTOR_FR] = motor[MOTOR_FL] = motorPower;
+		motor[MOTOR_BELT] = (int)(motorPower*2);
+		motor[MOTOR_BACK] = (int)(-motorPower*0.2); // Back motor is physically backwards
+	}
+	// If the robot has failed and goes down, then the back motor should be faster
+	// in order to not flip over
+	else
+	{
+		motor[MOTOR_FR] = motor[MOTOR_FL] = motorPower;
+		motor[MOTOR_BELT] = (int)(motorPower*2);
+		motor[MOTOR_BACK] = (int)(-motorPower); // Back motor is physically backwards
+	}
 
 	// The ratios above were found through testing
 
@@ -207,7 +220,7 @@ bool climb(int motorPower)
 	nMotorEncoder[MOTOR_BELT] = 0;
 
 	// Switch on motors needed for climbing
-	driveAllMotorsForClimbing(motorPower);
+	driveAllMotorsForClimbing(motorPower, true);
 
 	// While downwards tilt not detected, and touch sensor not activated (i.e. max height not reached)
 	while (getGyroDegrees(S1)>-TILT_AMOUNT && SensorValue[S3] == 0)
@@ -247,10 +260,12 @@ bool climb(int motorPower)
 // Function that moves the robot back down based on the belt motor's encoder
 void moveRobotBackDown(int motorPower)
 {
-	driveAllMotorsForClimbing(-motorPower);
+	driveAllMotorsForClimbing(-motorPower, false);
 	while (abs(nMotorEncoder[MOTOR_BELT]) > 0)
 	{}
-	driveAllMotorsForClimbing(0);
+	driveAllMotorsForClimbing(0, false);
+
+	return;
 }
 
 // Function that pulls the belt back up
@@ -260,6 +275,8 @@ void pullBeltBackUp(int motorPower)
 	while (abs(nMotorEncoder[MOTOR_BELT]) > 0)
 	{}
 	motor[MOTOR_BELT] = 0;
+
+	return;
 }
 
 // Function that averages 3 readings from the sound sensor and waits until the average sound level
@@ -281,6 +298,8 @@ void screamDetected(int soundLevel, float waitTime)
 		int reading3 = SensorValue(S2);
 		average = (float)(reading1 + reading2 + reading3) / 3.0;
 	}
+
+	return;
 }
 
 // Function that drives the robot a given distance
@@ -292,6 +311,8 @@ void driveDist(int distance, int motorPower)
 	while (abs(nMotorEncoder[MOTOR_FL]) < distToDrive)
 	{}
 	driveMotorsFrontBack(0,0);
+
+	return;
 }
 
 // Function that moves the belt of the robot down a certain amount of encoder counts
@@ -301,6 +322,8 @@ void moveBeltDown(int motorPower, int amount)
 	while(abs(nMotorEncoder[MOTOR_BELT]) < amount)
 	{}
 	motor[MOTOR_BELT] = 0;
+
+	return;
 }
 
 // Function that makes the robot go backwards and down steps
@@ -317,12 +340,11 @@ void climbDownAllSteps(int motorPower)
 	wait1Msec(1000);
 
 	// Keep climbing down until the bot is good to stop
-  bool isGoodToStop = false;
- 	while(!isGoodToStop)
- 	{
- 		int absChange = 0, oldDeg = 0;
-	  	time1[T1] = 0;
-	  	//int oldTime = time1[T1];
+	bool isGoodToStop = false;
+	while(!isGoodToStop)
+	{
+		int change = 0, oldDeg = 0, newDeg = 0;
+		time1[T1] = 0;
 
 		// While loop that only exits if has been on a flat surface for 4 seconds
 		while(time1[T1] < WAIT_TIME_FOR_CLIMB_DOWN)
@@ -330,24 +352,26 @@ void climbDownAllSteps(int motorPower)
 			//Check change in degrees
 			oldDeg = abs(getGyroDegrees(S1));
 			wait1Msec(50);
-			int change = abs(getGyroDegrees(S1));
-			absChange = abs(change - oldDeg);
+			newDeg = abs(getGyroDegrees(S1));
+			change = abs(newDeg - oldDeg);
 
-			// If the change is >5, reset the timer
-			if(absChange > TILT_AMOUNT_FOR_CLIMB_DOWN)
+			// If the angle change is >5, reset the timer
+			if(change > TILT_AMOUNT_FOR_CLIMB_DOWN)
 			{
 				//displayBigTextLine(5,"Went down a step");
 				time1[T1] = 0;
 			}
 		}
 
-	  	displayBigTextLine(5,"Stopping bot");
-	 	isGoodToStop = true;
- 	}
+		displayBigTextLine(5,"Stopping bot");
+		isGoodToStop = true;
+	}
 
 	// Stop motors
 	driveMotorsFrontBack(0, 0);
 
 	// Straighten out robot
 	pullBeltBackUp(motorPower);
+
+	return;
 }
