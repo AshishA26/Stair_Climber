@@ -13,7 +13,6 @@
 	Version: 1.0
 	Description: Stair Climbing Robot
 	Acknowledgements:
-	- https://www.robotc.net/files/pdf/lego-natural-language/NL_NXT_Quick.pdf // Sound Config Code
 	- http://cmra.rec.ri.cmu.edu/products/teachingmindstorms/sensing/volumespeed/documents/Sensing_SpeedBasedVolume.pdf // Sound Config Code
 	- https://www.youtube.com/watch?v=kjoKC0uWtTo&ab_channel=hundredvisionsguy // Sound File Code
 	- https://robotics.stackexchange.com/questions/751/confused-about-the-variables-in-robotc // Motor Mapping Code
@@ -22,7 +21,7 @@
 
 /*
 	Constraints:
-	- Can go up 1 or 2 books, possibly 3
+	- Can go up 1, 2, or 3 books
 	- Can go down 1 or 2 books
 	- Stops after it senses that it is not going down anymore steps
 	- Start on left side of books as it turns slightly right
