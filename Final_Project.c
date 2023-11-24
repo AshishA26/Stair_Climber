@@ -53,7 +53,7 @@ void moveBeltDown(int motorPower, int amount);
 
 // Constants
 const int SPEED_SLOW = 20;
-const float SOUND_LEVEL = 20;
+const float SOUND_LEVEL = 50;
 const float TIME_INTERVAL = 10;
 const int CM_TO_ENC = 360 / (2.0 * PI * 3.4);
 const int ROBOT_LENGTH = 10;
