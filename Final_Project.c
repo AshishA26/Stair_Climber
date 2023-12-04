@@ -10,7 +10,6 @@
 	Lego EV3 Group 8-8
 	11/20/2023
 	Robot Number: 33
-	Robot Name: Bertha
 	Version: 1.0
 	Description: Stair Climbing Robot
 	Acknowledgements:
@@ -77,7 +76,6 @@ task main()
 	// Display group and name
 	displayString(1, "Group: 8-8");
 	displayString(2, "Robot: 33");
-	displayString(3, "Name: Bertha");
 
 	// Wait until a loud noise is detected
 	screamDetected(SOUND_LEVEL, TIME_INTERVAL);
@@ -115,10 +113,10 @@ task main()
 		// Wait until a loud noise is detected meaning that the
 		// user is ready for robot to go back down
 		screamDetected(SOUND_LEVEL, TIME_INTERVAL);
-		displayBigTextLine(7," ");
-		displayBigTextLine(5,"Going down");
 
 		// Play sound
+		displayBigTextLine(7," ");
+		displayBigTextLine(5,"Going down");
 		playSoundFile("Confirm");
 		wait1Msec(2000);
 
@@ -358,7 +356,7 @@ void climbDownAllSteps(int motorPower)
 				time1[T1] = 0;
 			}
 		}
-		displayBigTextLine(5,"Stopping bot");
+		displayBigTextLine(5,"Stopping robot");
 		isGoodToStop = true;
 	}
 
