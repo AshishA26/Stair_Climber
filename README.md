@@ -1,50 +1,43 @@
 # Stair_Climber
-A project made for MTE100 and MTE121 that is able to deliver objects while climbing stairs
+A stair climbing robot made for our `MTE 100 and MTE 121` courses as a final project, that is able to autonomously deliver objects by climbing up and down stairs. It is purposed to help those who need something and are unable to traverse down stairs to get it, such as those with disabilities or those who are injured.
 
-## PseudoCode:
+Procedure:
+- Start upon voice activation. (a loud noise, etc.)
+- Climb variable heights and number of stairs, with minimal movement of the object in the carriage.
+- Detect the colour of the ground and stop when the colour green is seen meaning it is in the safe zone.
+- Once user has taken the object, robot will travel down the stairs until there are no more stairs.
 
-``````
-Reset Sensors and Motor Encoders as Required
+The robot will also:
+- Play sounds and display messages at certain checkpoints.
 
-Display Group Name, Robot Number, Robot Name
+Here is a short gif to demo the robot:
+![Pic1](./Images/Climb.gif)
 
-While sound threshold not met, don't start (Make a function that takes sound measurements as a 3 point average over 15ms)
+Checkout the [full demo video](https://www.youtube.com/watch?v=L8bMRJ6BMCM) and the demo from [a different view](https://www.youtube.com/watch?v=oZTXrjerqaw).
 
-Play notification sound
+## Pictures
+![Pic1](./Images/PXL_20231124_161445239.jpg)
+![Pic2](./Images/PXL_20231119_042550420.jpg)
+![Pic3](./Images/PXL_20231119_042518903.jpg)
+![Pic4](./Images/PXL_20231119_042656926~2.jpg)
+![Pic5](./Images/PXL_20231119_042508490.jpg)
 
-**Everything tabbed exists in a do while loop, condition(touch sensor not activated, forward distance within a step length)
+### Initial Design
+![Pic6](./Images/PXL_20231108_231315431.jpg)
 
-Drive forward at a steady speed, while ultrasonic min dist not met (Make a function that takes dist measurements as a 3 point average over 15ms)
+## Flowcharts
+Main flowchart:
 
-Drive slowly for 5 seconds
+![Flowchart1](./Images/NEWFlowChart1.png)
 
-While ultrasonic max dist not met or max height not met, begin climibing the belt and front wheels simultaneously and a slow rate (speed to be determined based on results)
+Climb all steps flowchart:
 
-IF max height reached, go back down, using motorencoders and play error noise and end program
+![Flowchart2](./Images/NEWFlowChart2.png)
 
-ELSE drive distance of robot length, stop, pick up belt using motorencoder
+Climb one step flowchart:
 
-While color not correct, drive until color is reached
+![Flowchart3](./Images/NEWFlowChart3.png)
 
-Play notification sound
+Climb down all steps flowchart:
 
-End Program
-
----
-
-Project Extension, IF WE HAVE TIME
-
-**Back in the climbing phase, store the distance climbed and distance driven from edge, remember this all only happens if we sucessfully climbed.
-
-Drive back exactly the distance driven, put down the belt slight more than recorded via encoder
-
-Slowly Drive back until distance of bot driven, once reached immediately drive front wheels slowly back and back wheels only a tiny bit forward (This part would take lots of testing)
-
-Drive both simultaneously down at the same rate until motor encoder amount met
-
-Driver back, turn around, and arrive at start.
-
-Play notification
-
-End Program
-```
+![Flowchart4](./Images/NEWFlowChart4.png)
